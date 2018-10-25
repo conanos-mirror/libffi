@@ -18,7 +18,7 @@ class LibFFIConan(ConanFile):
     exports_sources = ["CMakeLists.txt"]
     generators = "cmake"
     settings = "os", "arch", "compiler", "build_type"
-    options = {"shared": [True], "fPIC": [True, False]}
+    options = {"shared": [True, False], "fPIC": [True, False]}
     default_options = "shared=True", "fPIC=True"
 
     source_subfolder = "source_subfolder"
@@ -96,7 +96,12 @@ class LibFFIConan(ConanFile):
             self.run("autoreconf -f -i")
 
             autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure(args=["--prefix=%s/build"%(os.getcwd()), "--enable-introspection"])
+            _args = ["--prefix=%s/build"%(os.getcwd()), "--enable-introspection"]
+            if self.options.shared:
+                _args.extend(['--enable-shared=yes','--enable-static=no'])
+            else:
+                _args.extend(['--enable-shared=no','--enable-static=yes'])
+            autotools.configure(args=_args)
             autotools.make(args=["-j2"])
             autotools.install()
 
