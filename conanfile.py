@@ -5,7 +5,8 @@ import os
 import shutil
 from conans import ConanFile, tools, CMake
 import platform
-from conans import ConanFile, VisualStudioBuildEnvironment
+from conans import ConanFile, VisualStudioBuildEnvironment, AutoToolsBuildEnvironment
+
 class LibFFIConan(ConanFile):
     name = "libffi"
     version = "3.3-rc0"
@@ -46,6 +47,9 @@ class LibFFIConan(ConanFile):
     def build(self):
         if self.settings.compiler == 'Visual Studio':
             self.msvc_build()
+        
+        if self.settings.compiler == 'gcc':
+            self.gcc_build()
 
     def msvc_build(self):
         host = build = 'x86_64-w64-cygwin'
@@ -87,19 +91,30 @@ class LibFFIConan(ConanFile):
             cmake.test()
         #tools.mkdir("package")
         
+    def gcc_build(self):
+        with tools.chdir(self.source_subfolder):
+            self.run("autoreconf -f -i")
 
+            autotools = AutoToolsBuildEnvironment(self)
+            autotools.configure(args=["--prefix=%s/build"%(os.getcwd()), "--enable-introspection"])
+            autotools.make(args=["-j2"])
+            autotools.install()
 
-        
 
     def package(self):
-        builddir=os.path.join(self.source_subfolder,'x86_64-w64-cygwin')
-        builddir=os.path.abspath(builddir)
-        bindir=os.path.join(builddir,'.libs')
-        incdir=os.path.join(builddir,'include')
-        
-        self.copy(pattern="libffi-*.dll",dst="bin",src=bindir)
-        self.copy(pattern="libffi-*.lib",dst="lib",src=bindir)
-        self.copy(pattern="*.h",dst="include",src= incdir)
+        if self.settings.os == "Windows":
+            builddir=os.path.join(self.source_subfolder,'x86_64-w64-cygwin')
+            builddir=os.path.abspath(builddir)
+            bindir=os.path.join(builddir,'.libs')
+            incdir=os.path.join(builddir,'include')
+
+            self.copy(pattern="libffi-*.dll",dst="bin",src=bindir)
+            self.copy(pattern="libffi-*.lib",dst="lib",src=bindir)
+            self.copy(pattern="*.h",dst="include",src= incdir)
+
+        if self.settings.os == "Linux":
+            self.copy("*", src="%s/build"%(self.source_subfolder))
+
 
     def package_info(self):
         if self.settings.os == "Windows":
