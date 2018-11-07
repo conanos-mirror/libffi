@@ -18,8 +18,10 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
     pyenv rehash
     pyenv activate conan
 else	
+    ls /usr/share/aclocal/ltdl.m4 -l
 	sudo apt-get update
-	sudo apt-get install libltdl-dev 	
+	sudo apt-get install libltdl-dev
+    ls /usr/share/aclocal/ltdl.m4 -l 	
 fi
 
 pip install conan_package_tools
