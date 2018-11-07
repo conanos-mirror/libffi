@@ -45,6 +45,8 @@ class LibFFIConan(ConanFile):
         os.rename("libffi-" + self.version, self.source_subfolder)
 
     def build(self):
+        import os
+        os.system("ls /usr/share/aclocal/ltdl.m4 -l")
         if self.settings.compiler == 'Visual Studio':
             self.msvc_build()
         

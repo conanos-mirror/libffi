@@ -23,8 +23,8 @@ else
     sudo docker images
     gcc --version
     ls /usr/share/aclocal/ltdl.m4 -l
-	apt-get update
-	apt-get install libltdl-dev
+	sudo apt-get update
+	sudo apt-get install libltdl-dev
     ls /usr/share/aclocal/ltdl.m4 -l 	
 fi
 
