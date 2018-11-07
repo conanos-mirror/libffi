@@ -5,22 +5,12 @@
 from bincrafters import build_template_default
 import platform
 import os
-
-os.environ['CONAN_USERNAME'] = os.environ.get('CONAN_USERNAME','conanos')
+from conanos.sdk.profile import filter
+if platform.system() == 'Windows':
+    os.environ['CONAN_VISUAL_VERSIONS']=os.environ.get('CONAN_VISUAL_VERSIONS','15')
 
 if __name__ == "__main__":
-
     builder = build_template_default.get_builder()
-    items = []
-    for item in builder.items:
-        # skip mingw cross-builds
-        if platform.system() == "Windows":
-            if item.settings["compiler"] != "Visual Studio":
-                continue
-            if not item.options["libffi:shared"]:
-                continue
-        items.append(item)
-
-    builder.items = items
+    filter('bzip2',builder)
 
     builder.run()
