@@ -17,15 +17,7 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
     pyenv virtualenv 2.7.10 conan
     pyenv rehash
     pyenv activate conan
-else	
-    echo "------------------------------------------"
-    echo "------------------------------------------"
-    sudo docker images
-    gcc --version
-    ls /usr/share/aclocal/ltdl.m4 -l
-	sudo apt-get update
-	sudo apt-get install libltdl-dev
-    ls /usr/share/aclocal/ltdl.m4 -l 	
+	
 fi
 
 
