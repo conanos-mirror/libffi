@@ -10,8 +10,8 @@ if __name__ == "__main__":
     #if os.environ.get('CONAN_DOCKER_IMAGE') and os.environ.get('CONAN_GCC_VERSIONS'):
 #    command += ' && sudo chmod 666 /etc/apt/sources.list'
 #    command += ' && sudo echo deb mirrors.kernel.org/ubuntu cosmic main >> /etc/apt/sources.list'
-    command += ' && sudo apt-get update' 
-    command += ' && sudo apt-get upgrade' 
+    command += ' && sudo apt-get update -y' 
+    command += ' && sudo apt-get upgrade -y' 
     command += ' && sudo apt-get install libltdl-dev' 
     command += ' && ls /usr/share/aclocal/ltdl.m4 -l'
 
