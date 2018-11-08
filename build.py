@@ -16,6 +16,8 @@ if __name__ == "__main__":
     command += ' && sudo apt-get -y install texinfo'     
     command += ' && ls /usr/share/aclocal/ltdl.m4 -l'
 
+    command = './docker_entry_script.sh'
+
     builder = ConanMultiPackager(docker_entry_script=command)
     builder.add_common_builds(pure_c=True)
 
