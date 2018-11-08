@@ -8,10 +8,10 @@ __PACKAGE_NAME__ = 'libffi'
 if __name__ == "__main__":
     command = 'echo start build %s'%__PACKAGE_NAME__
     #if os.environ.get('CONAN_DOCKER_IMAGE') and os.environ.get('CONAN_GCC_VERSIONS'):
-    command += 'sudo apt-get update '
-    command += '&& sudo apt-get upgrade' 
-    command += '&& sudo apt-get install libltdl-dev ' 
-    command += '&& ls /usr/share/aclocal/ltdl.m4 -l '
+    command += ' sudo apt-get update'
+    command += ' && sudo apt-get upgrade' 
+    command += ' && sudo apt-get install libltdl-dev' 
+    command += ' && ls /usr/share/aclocal/ltdl.m4 -l'
 
     builder = ConanMultiPackager(docker_entry_script=command)
     builder.add_common_builds(pure_c=True)
