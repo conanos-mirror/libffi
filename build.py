@@ -12,7 +12,7 @@ if __name__ == "__main__":
 #    command += ' && sudo echo deb mirrors.kernel.org/ubuntu cosmic main >> /etc/apt/sources.list'
     command += ' && sudo apt-get update -y' 
     command += ' && sudo apt-get upgrade -y' 
-    command += ' && sudo apt-get install libltdl-dev' 
+    command += ' && sudo apt-get -y install libltdl-dev' 
     command += ' && ls /usr/share/aclocal/ltdl.m4 -l'
 
     builder = ConanMultiPackager(docker_entry_script=command)
