@@ -11,13 +11,10 @@ sudo apt-get -y install texinfo
 #export DEBIAN_FRONTEND=noninteractive
 #export DEBCONF_NONINTERACTIVE_SEEN=true
 #sudo apt-get install -y tzdata
-hint="
-skip dejagnu test since conanio/${compiler}${version}
-because the tzdata install will block
-" 
-if [[ $compiler == 'gcc' -a $version  -ge '8' ]]; then
+hint="skip dejagnu test conanio/${compiler}${version},since tzdata block" 
+if [[ $compiler == 'gcc' && $version  -ge '8' ]]; then
    echo ${hint} 
-elif [[ $compiler == 'clang' -a $version  -ge '7' ]]; then
+elif [[ $compiler == 'clang' && $version  -ge '7' ]]; then
    echo ${hint} 
 else
    sudo apt-get -y install dejagnu 
