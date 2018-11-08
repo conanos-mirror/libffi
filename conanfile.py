@@ -6,6 +6,7 @@ import shutil
 from conans import ConanFile, tools, CMake
 import platform
 from conans import ConanFile, VisualStudioBuildEnvironment, AutoToolsBuildEnvironment
+from conans.client.tools.oss import cross_building
 
 class LibFFIConan(ConanFile):
     name = "libffi"
@@ -55,6 +56,13 @@ class LibFFIConan(ConanFile):
 
     def msvc_build(self):
         host = build = 'x86_64-w64-cygwin'
+        if self.settings.arch == 'x86_64':
+            BUILD="x86_64-w64-cygwin"
+            HOST="x86_64-w64-cygwin"
+        else:
+            BUILD="x86-pc-cygwin"
+            HOST="x86-pc-windows"
+            
         with tools.chdir(self.source_subfolder):
             msvcc = os.path.abspath( os.path.join('msvcc.sh') ).replace("\\","/")
             msvcc = '/cygdrive/%s '%msvcc.replace(":","/")
@@ -72,8 +80,8 @@ class LibFFIConan(ConanFile):
             options += " AR='./.travis/ar-lib lib'"
             options += " NM='dumpbin -symbols'"
             options += " STRIP=':'"
-            options += " --build=%s"%build
-            options += " --host=%s"%host
+            options += " --build=%s"%BUILD
+            options += " --host=%s"%HOST
             self.run( tools.vcvars_command(self.settings) + 
                 " && sh ./autogen.sh "
                 " && sh ./configure %s"%options +
@@ -105,8 +113,9 @@ class LibFFIConan(ConanFile):
                 _args.extend(['--enable-shared=no','--enable-static=yes'])
             autotools.configure(args=_args)
             autotools.make()#args=["-j2"])
-            if self.settings.os == platform.system():
-                # if not cross build
+            
+
+            if not cross_building():
                 self.run('make check')
             autotools.install()
 
