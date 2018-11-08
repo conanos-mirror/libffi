@@ -62,7 +62,7 @@ class LibFFIConan(ConanFile):
         else:
             BUILD="x86-pc-cygwin"
             HOST="x86-pc-windows"
-            
+
         with tools.chdir(self.source_subfolder):
             msvcc = os.path.abspath( os.path.join('msvcc.sh') ).replace("\\","/")
             msvcc = '/cygdrive/%s '%msvcc.replace(":","/")
@@ -115,14 +115,20 @@ class LibFFIConan(ConanFile):
             autotools.make()#args=["-j2"])
             
 
-            if not cross_building():
+            if not cross_building(self.settings):
                 self.run('make check')
             autotools.install()
 
 
     def package(self):
         if self.settings.os == "Windows":
-            builddir=os.path.join(self.source_subfolder,'x86_64-w64-cygwin')
+            
+            if self.settings.arch == 'x86_64':
+                BUILD="x86_64-w64-cygwin"
+            else:
+                BUILD="x86-pc-cygwin"
+
+            builddir=os.path.join(self.source_subfolder,BUILD)
             builddir=os.path.abspath(builddir)
             bindir=os.path.join(builddir,'.libs')
             incdir=os.path.join(builddir,'include')
