@@ -23,6 +23,6 @@ fi
 
 pip install conan_package_tools
 pip install conan  --upgrade
-pip install bincrafters_package_tools
+#pip install bincrafters_package_tools
 pip install conanos  --upgrade
 conan user

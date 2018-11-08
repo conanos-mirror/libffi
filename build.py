@@ -1,17 +1,35 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-
-from bincrafters import build_template_default
-import platform
 import os
-from conanos.sdk.profile import filter
-if platform.system() == 'Windows':
-    os.environ['CONAN_VISUAL_VERSIONS']=os.environ.get('CONAN_VISUAL_VERSIONS','15')
 
-PACKAGE_NAME='libffi'	
+from cpt.packager import ConanMultiPackager
+
+__PACKAGE_NAME__ = 'libffi'
 if __name__ == "__main__":
-    builder = build_template_default.get_builder()
-    filter(PACKAGE_NAME,builder)
+    command = 'echo start build %s'%__PACKAGE_NAME__
+    if os.environ.get('CONAN_DOCKER_IMAGE') and os.environ.get('CONAN_GCC_VERSIONS'):
+        command = 'sudo apt-get update '
+        '&& sudo apt-get install libltdl-dev '
+        '&& ls /usr/share/aclocal/ltdl.m4 -l '
+        
+    builder = ConanMultiPackager(docker_entry_script=command)
+    builder.add_common_builds(pure_c=True)
 
+    filter(__PACKAGE_NAME__,builder)
+    
     builder.run()
+
+
+#from bincrafters import build_template_default
+#import platform
+#import os
+#from conanos.sdk.profile import filter
+#if platform.system() == 'Windows':
+#    os.environ['CONAN_VISUAL_VERSIONS']=os.environ.get('CONAN_VISUAL_VERSIONS','15')
+#
+#PACKAGE_NAME='libffi'	
+#if __name__ == "__main__":
+#    builder = build_template_default.get_builder()
+#    filter(PACKAGE_NAME,builder)
+#
+#    builder.run()
