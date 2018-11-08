@@ -23,7 +23,7 @@ if __name__ == "__main__":
     if PATTERN_.match(os.environ.get('CONAN_DOCKER_IMAGE','')):
         docker_entry_script = '/bin/sh docker_entry_script.sh'
         
-    builder = ConanMultiPackager(docker_entry_script=command)
+    builder = ConanMultiPackager(docker_entry_script=docker_entry_script)
     builder.add_common_builds(pure_c=True)
 
 #    filter(__PACKAGE_NAME__,builder)
