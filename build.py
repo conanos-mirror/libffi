@@ -8,22 +8,12 @@ __PACKAGE_NAME__ = 'libffi'
 PATTERN_ = re.compile(r'conanio/(?P<compiler>gcc|clang)(?P<version>\d+)(-(?P<arch>\w+))?')
 
 if __name__ == "__main__":
-#    command = 'echo start build %s'%__PACKAGE_NAME__
-#    #if os.environ.get('CONAN_DOCKER_IMAGE') and os.environ.get('CONAN_GCC_VERSIONS'):
-##    command += ' && sudo chmod 666 /etc/apt/sources.list'
-##    command += ' && sudo echo deb mirrors.kernel.org/ubuntu cosmic main >> /etc/apt/sources.list'
-#    command += ' && sudo apt-get update -y' 
-#    command += ' && sudo apt-get upgrade -y' 
-#    command += ' && sudo apt-get -y install libltdl-dev'
-#    command += ' && sudo apt-get -y install texinfo'     
-#    command += ' && ls /usr/share/aclocal/ltdl.m4 -l'
-#
-#    command = 'ls -l && sudo ./docker_entry_script.sh'
+
     docker_entry_script = ''
     m = PATTERN_.match(os.environ.get('CONAN_DOCKER_IMAGE',''))
     if m:
         docker_entry_script = '/bin/bash docker_entry_script.sh {compiler} {version}'.format(
-            compiler = m.group('compiler'),m.group('version') )
+            compiler = m.group('compiler'), version = m.group('version') )
         
     builder = ConanMultiPackager(docker_entry_script=docker_entry_script)
     builder.add_common_builds(pure_c=True)
