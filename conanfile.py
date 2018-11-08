@@ -105,7 +105,7 @@ class LibFFIConan(ConanFile):
                 _args.extend(['--enable-shared=no','--enable-static=yes'])
             autotools.configure(args=_args)
             autotools.make()#args=["-j2"])
-            if self.settings.os == self.settings.os_build:
+            if self.settings.os == platform.system():
                 # if not cross build
                 self.run('make check')
             autotools.install()
