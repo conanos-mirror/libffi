@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from bincrafters import build_template_default
+
 import platform
 import os
 import re
@@ -7,7 +7,7 @@ from cpt.packager import ConanMultiPackager
 from conanos.sdk.profile import filter
 
 __NAME__ = 'libffi'
-PATTERN_ = re.compile(r'conanio/(?P<compiler>gcc|clang)(?P<version>\d+)(-(?P<arch>\w+))?')
+
 if platform.system() == 'Windows':
     os.environ['CONAN_VISUAL_VERSIONS'] = os.environ.get('CONAN_VISUAL_VERSIONS','15')
 

@@ -1,4 +1,7 @@
-
+branches:
+  only:
+  - /testing\/*/
+  - /stable\/*/
 env:
    global:
      - CONAN_REFERENCE: "libffi/3.3-rc0"
