@@ -6,6 +6,7 @@ import shutil
 from conans import ConanFile, tools, CMake
 import platform
 from conans import ConanFile, VisualStudioBuildEnvironment, AutoToolsBuildEnvironment
+from conans.client.tools.oss import cross_building
 
 class LibFFIConan(ConanFile):
     name = "libffi"
@@ -45,6 +46,8 @@ class LibFFIConan(ConanFile):
         os.rename("libffi-" + self.version, self.source_subfolder)
 
     def build(self):
+        import os
+        os.system("ls /usr/share/aclocal/ltdl.m4 -l")
         if self.settings.compiler == 'Visual Studio':
             self.msvc_build()
         
@@ -53,6 +56,13 @@ class LibFFIConan(ConanFile):
 
     def msvc_build(self):
         host = build = 'x86_64-w64-cygwin'
+        if self.settings.arch == 'x86_64':
+            BUILD="x86_64-w64-cygwin"
+            HOST="x86_64-w64-cygwin"
+        else:
+            BUILD="x86-pc-cygwin"
+            HOST="x86-pc-windows"
+
         with tools.chdir(self.source_subfolder):
             msvcc = os.path.abspath( os.path.join('msvcc.sh') ).replace("\\","/")
             msvcc = '/cygdrive/%s '%msvcc.replace(":","/")
@@ -70,8 +80,8 @@ class LibFFIConan(ConanFile):
             options += " AR='./.travis/ar-lib lib'"
             options += " NM='dumpbin -symbols'"
             options += " STRIP=':'"
-            options += " --build=%s"%build
-            options += " --host=%s"%host
+            options += " --build=%s"%BUILD
+            options += " --host=%s"%HOST
             self.run( tools.vcvars_command(self.settings) + 
                 " && sh ./autogen.sh "
                 " && sh ./configure %s"%options +
@@ -102,13 +112,23 @@ class LibFFIConan(ConanFile):
             else:
                 _args.extend(['--enable-shared=no','--enable-static=yes'])
             autotools.configure(args=_args)
-            autotools.make(args=["-j2"])
+            autotools.make()#args=["-j2"])
+            
+
+            if not cross_building(self.settings):
+                self.run('make check')
             autotools.install()
 
 
     def package(self):
         if self.settings.os == "Windows":
-            builddir=os.path.join(self.source_subfolder,'x86_64-w64-cygwin')
+            
+            if self.settings.arch == 'x86_64':
+                BUILD="x86_64-w64-cygwin"
+            else:
+                BUILD="x86-pc-cygwin"
+
+            builddir=os.path.join(self.source_subfolder,BUILD)
             builddir=os.path.abspath(builddir)
             bindir=os.path.join(builddir,'.libs')
             incdir=os.path.join(builddir,'include')
