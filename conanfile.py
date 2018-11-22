@@ -20,9 +20,9 @@ class LibFFIConan(ConanFile):
     generators = "cmake"
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False], "fPIC": [True, False]}
-    default_options = "shared=True", "fPIC=True"
+    default_options = "shared=False", "fPIC=True"
 
-    source_subfolder = "source_subfolder"
+    _source_subfolder = "source_subfolder"
 
 
     def config_options(self):
@@ -43,7 +43,7 @@ class LibFFIConan(ConanFile):
                
         url = "https://github.com/libffi/libffi/archive/v{version}.tar.gz"
         tools.get(url.format(version =self.version))
-        os.rename("libffi-" + self.version, self.source_subfolder)
+        os.rename("libffi-" + self.version, self._source_subfolder)
 
     def build(self):
         import os
@@ -63,7 +63,7 @@ class LibFFIConan(ConanFile):
             BUILD="x86-pc-cygwin"
             HOST="x86-pc-windows"
 
-        with tools.chdir(self.source_subfolder):
+        with tools.chdir(self._source_subfolder):
             msvcc = os.path.abspath( os.path.join('msvcc.sh') ).replace("\\","/")
             msvcc = '/cygdrive/%s '%msvcc.replace(":","/")
             msvcc += '-m64' if self.settings.arch == 'x86_64' else '-m32'
@@ -102,7 +102,7 @@ class LibFFIConan(ConanFile):
         #tools.mkdir("package")
         
     def gcc_build(self):
-        with tools.chdir(self.source_subfolder):
+        with tools.chdir(self._source_subfolder):
             self.run("autoreconf -f -i")
 
             autotools = AutoToolsBuildEnvironment(self)
@@ -128,7 +128,7 @@ class LibFFIConan(ConanFile):
             else:
                 BUILD="x86-pc-cygwin"
 
-            builddir=os.path.join(self.source_subfolder,BUILD)
+            builddir=os.path.join(self._source_subfolder,BUILD)
             builddir=os.path.abspath(builddir)
             bindir=os.path.join(builddir,'.libs')
             incdir=os.path.join(builddir,'include')
@@ -138,11 +138,8 @@ class LibFFIConan(ConanFile):
             self.copy(pattern="*.h",dst="include",src= incdir)
 
         if self.settings.os == "Linux":
-            self.copy("*", src="%s/build"%(self.source_subfolder))
+            self.copy("*", src="%s/build"%(self._source_subfolder))
 
 
     def package_info(self):
-        if self.settings.os == "Windows":
-            self.cpp_info.libs = ['libffi-7']
-        else:
-            self.cpp_info.libs = ["libffi-7"]
+        self.cpp_info.libs = ["libffi-7"]
