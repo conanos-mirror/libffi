@@ -142,4 +142,7 @@ class LibFFIConan(ConanFile):
 
 
     def package_info(self):
-        self.cpp_info.libs = ["libffi-7"]
+        if self.settings.os == "Windows":
+            self.cpp_info.libs = ["libffi-7"]
+        if self.settings.os == "Linux":
+            self.cpp_info.libs = ["ffi"]
