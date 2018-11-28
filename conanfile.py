@@ -46,9 +46,11 @@ class LibFFIConan(ConanFile):
 
     def build(self):
         prefix = os.path.join(self.build_folder, self._build_subfolder, "install")
+        defs = {'prefix' : prefix}
+        if self.settings.os == "Linux":
+            defs.update({'libdir':'lib'})
         meson = Meson(self)
-        meson.configure(defs={'prefix' : prefix},
-                        source_dir=self._source_subfolder, build_dir=self._build_subfolder)
+        meson.configure(defs=defs,source_dir=self._source_subfolder, build_dir=self._build_subfolder)
         meson.build()
         self.run('ninja -C {0} install'.format(meson.build_dir))
 
