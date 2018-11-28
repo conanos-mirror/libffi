@@ -7,6 +7,7 @@ from conans import ConanFile, tools, CMake
 import platform
 from conans import ConanFile, VisualStudioBuildEnvironment, AutoToolsBuildEnvironment
 from conans.client.tools.oss import cross_building
+from conanos.build import config_scheme
 from conans import Meson
 
 class LibFFIConan(ConanFile):
@@ -31,6 +32,8 @@ class LibFFIConan(ConanFile):
     def config_options(self):
         if self.settings.os == "Windows":
             del self.options.fPIC
+        
+        config_scheme(self)
 
     def configure(self):
         del self.settings.compiler.libcxx
