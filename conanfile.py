@@ -7,142 +7,51 @@ from conans import ConanFile, tools, CMake
 import platform
 from conans import ConanFile, VisualStudioBuildEnvironment, AutoToolsBuildEnvironment
 from conans.client.tools.oss import cross_building
+from conans import Meson
 
 class LibFFIConan(ConanFile):
     name = "libffi"
-    version = "3.3-rc0"
+    version = "3.299999"
     description = "libffi is a library that provides foreign function interface. "
     url = "http://github.com/libffi/libffi"
     homepage = "http://github.com/libffi/libffi"
-    license = "http://github.com/libffi/libffi/LICENSE"
-    exports = ["LICENSE.md"]
-    exports_sources = ["CMakeLists.txt"]
-    generators = "cmake"
+    license = "MIT"
+    exports = ["LICENSE"]
+    generators = "visual_studio", "gcc"
     settings = "os", "arch", "compiler", "build_type"
-    options = {"shared": [True, False], "fPIC": [True, False]}
-    default_options = "shared=False", "fPIC=True"
+    options = {
+        "shared": [True, False],
+        "fPIC": [True, False],
+    }
+    default_options = { 'shared': False, 'fPIC': True }
 
     _source_subfolder = "source_subfolder"
-
+    _build_subfolder = "build_subfolder"
 
     def config_options(self):
         if self.settings.os == "Windows":
-            self.options.remove("fPIC")
+            del self.options.fPIC
 
     def configure(self):
         del self.settings.compiler.libcxx
 
-    def build_requirements(self):
-        if platform.system() == "Windows":
-            #self.build_requires("mingw_installer/1.0@conan/stable")
-            #self.build_requires("msys2_installer/latest@bincrafters/stable")
-            self.build_requires("cygwin_installer/2.9.0@bincrafters/stable")
-            
-
     def source(self):
-               
-        url = "https://github.com/libffi/libffi/archive/v{version}.tar.gz"
-        tools.get(url.format(version =self.version))
-        os.rename("libffi-" + self.version, self._source_subfolder)
+        url_ = "https://github.com/CentricularK/libffi.git"
+        branch_ = "meson"
+        git = tools.Git(folder=self._source_subfolder)
+        git.clone(url_, branch=branch_)
 
     def build(self):
-        import os
-        os.system("ls /usr/share/aclocal/ltdl.m4 -l")
-        if self.settings.compiler == 'Visual Studio':
-            self.msvc_build()
-        
-        if self.settings.compiler == 'gcc':
-            self.gcc_build()
-
-    def msvc_build(self):
-        host = build = 'x86_64-w64-cygwin'
-        if self.settings.arch == 'x86_64':
-            BUILD="x86_64-w64-cygwin"
-            HOST="x86_64-w64-cygwin"
-        else:
-            BUILD="x86-pc-cygwin"
-            HOST="x86-pc-windows"
-
-        with tools.chdir(self._source_subfolder):
-            msvcc = os.path.abspath( os.path.join('msvcc.sh') ).replace("\\","/")
-            msvcc = '/cygdrive/%s '%msvcc.replace(":","/")
-            msvcc += '-m64' if self.settings.arch == 'x86_64' else '-m32'
-            if self.settings.build_type == 'Debug':
-                msvcc += ' -g '
-
-            options = ' '
-            options += " CC='%s'"%msvcc
-            options += " CXX='%s'"%msvcc
-            options += " LD='link'"
-            options += " CPP='cl -nologo -EP'"
-            options += " CXXCPP='cl -nologo -EP'"
-            options += " CPPFLAGS='-DFFI_BUILDING_DLL'"
-            options += " AR='./.travis/ar-lib lib'"
-            options += " NM='dumpbin -symbols'"
-            options += " STRIP=':'"
-            options += " --build=%s"%BUILD
-            options += " --host=%s"%HOST
-            self.run( tools.vcvars_command(self.settings) + 
-                " && sh ./autogen.sh "
-                " && sh ./configure %s"%options +
-                " && cp src/x86/ffitarget.h include" +
-                " && make" 
-                )
-            rootd = os.path.abspath('.').replace('\\','/')
-
-            defs={'LIBFFI_SOURCE_DIRECTORY': '%s/testsuite'%rootd ,
-                  'LIBFFI_INCLUDE_DIRECTORY':'%s/%s'%(rootd,build),
-                  'LIBFFI_LIBS_DIRECTORY':'%s/%s/.libs'%(rootd,build),
-                  'BUILD_TYPE': self.settings.build_type
-                  }
-            cmake = CMake(self)
-            cmake.configure(defs=defs)
-            cmake.build()
-            cmake.test()
-        #tools.mkdir("package")
-        
-    def gcc_build(self):
-        with tools.chdir(self._source_subfolder):
-            self.run("autoreconf -f -i")
-
-            autotools = AutoToolsBuildEnvironment(self)
-            _args = ["--prefix=%s/build"%(os.getcwd()), "--enable-introspection"]
-            if self.options.shared:
-                _args.extend(['--enable-shared=yes','--enable-static=no'])
-            else:
-                _args.extend(['--enable-shared=no','--enable-static=yes'])
-            autotools.configure(args=_args)
-            autotools.make()#args=["-j2"])
-            
-
-            if not cross_building(self.settings):
-                self.run('make check')
-            autotools.install()
-
+        prefix = os.path.join(self.build_folder, self._build_subfolder, "install")
+        meson = Meson(self)
+        meson.configure(defs={'prefix' : prefix},
+                        source_dir=self._source_subfolder, build_dir=self._build_subfolder)
+        meson.build()
+        self.run('ninja -C {0} install'.format(meson.build_dir))
 
     def package(self):
-        if self.settings.os == "Windows":
-            
-            if self.settings.arch == 'x86_64':
-                BUILD="x86_64-w64-cygwin"
-            else:
-                BUILD="x86-pc-cygwin"
-
-            builddir=os.path.join(self._source_subfolder,BUILD)
-            builddir=os.path.abspath(builddir)
-            bindir=os.path.join(builddir,'.libs')
-            incdir=os.path.join(builddir,'include')
-
-            self.copy(pattern="libffi-*.dll",dst="bin",src=bindir)
-            self.copy(pattern="libffi-*.lib",dst="lib",src=bindir)
-            self.copy(pattern="*.h",dst="include",src= incdir)
-
-        if self.settings.os == "Linux":
-            self.copy("*", src="%s/build"%(self._source_subfolder))
+        self.copy("*", dst=self.package_folder, src=os.path.join(self.build_folder,self._build_subfolder, "install"))
 
 
     def package_info(self):
-        if self.settings.os == "Windows":
-            self.cpp_info.libs = ["libffi-7"]
-        if self.settings.os == "Linux":
-            self.cpp_info.libs = ["ffi"]
+        self.cpp_info.libs = tools.collect_libs(self)
